@@ -2,7 +2,7 @@ import { PLAYERS } from './players.js';
 import { firebaseConfig, firebaseEnabled } from './firebase-config.js';
 
 const POSITIONS = ['QB', 'RB', 'WR', 'TE', 'K', 'DEF'];
-const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G'];
+const TIERS = ['S', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K'];
 const DEFAULT_TARGETS = { QB: 2, RB: 5, WR: 6, TE: 2, K: 1, DEF: 1 };
 const PLAYERS_BY_ID = new Map(PLAYERS.map(p => [p.id, p]));
 

@@ -11,14 +11,18 @@
   --good: #22C55E;
   --bad: #F04438;
 
-  --tier-S: #2E7DF6;
-  --tier-A: #3E6FE0;
-  --tier-B: #4C63B8;
-  --tier-C: #64708C;
-  --tier-D: #57617C;
-  --tier-E: #4A5268;
-  --tier-F: #3B4256;
-  --tier-G: #262B3A;
+  --tier-S: #EF4444;
+  --tier-A: #F97316;
+  --tier-B: #F5B942;
+  --tier-C: #FBE64C;
+  --tier-D: #A8D64A;
+  --tier-E: #4CAF50;
+  --tier-F: #14B8A6;
+  --tier-G: #3B82F6;
+  --tier-H: #64748B;
+  --tier-I: #8B93A6;
+  --tier-J: #A5ABB8;
+  --tier-K: #5B6472;
 }
 
 html[data-theme="light"]{
@@ -34,14 +38,18 @@ html[data-theme="light"]{
   --good: #15803D;
   --bad: #B91C1C;
 
-  --tier-S: #1D4ED8;
-  --tier-A: #2454C7;
-  --tier-B: #35569E;
-  --tier-C: #57648A;
-  --tier-D: #63708F;
-  --tier-E: #7482A0;
-  --tier-F: #9AA5BC;
-  --tier-G: #C3CBDC;
+  --tier-S: #DC2626;
+  --tier-A: #EA580C;
+  --tier-B: #D97706;
+  --tier-C: #CA8A04;
+  --tier-D: #65A30D;
+  --tier-E: #16A34A;
+  --tier-F: #0D9488;
+  --tier-G: #1D4ED8;
+  --tier-H: #475569;
+  --tier-I: #64748B;
+  --tier-J: #7C8598;
+  --tier-K: #3F4655;
 }
 
 *{ box-sizing: border-box; }
@@ -148,6 +156,11 @@ header.top::before{
 .pill:hover{ border-color: var(--ink-faint); color: var(--ink); }
 .pill.active{ background: var(--accent); border-color: var(--accent); color: var(--bg); font-weight: 600; }
 .pill.tier-pill.active{ color: #fff; }
+.pill.tier-pill.active[data-tier="A"],
+.pill.tier-pill.active[data-tier="B"],
+.pill.tier-pill.active[data-tier="C"],
+.pill.tier-pill.active[data-tier="D"],
+.pill.tier-pill.active[data-tier="J"]{ color: var(--bg); }
 .pill.tier-pill.active[data-tier="S"]{ background: var(--tier-S); border-color:var(--tier-S); }
 .pill.tier-pill.active[data-tier="A"]{ background: var(--tier-A); border-color:var(--tier-A); }
 .pill.tier-pill.active[data-tier="B"]{ background: var(--tier-B); border-color:var(--tier-B); }
@@ -156,6 +169,10 @@ header.top::before{
 .pill.tier-pill.active[data-tier="E"]{ background: var(--tier-E); border-color:var(--tier-E); }
 .pill.tier-pill.active[data-tier="F"]{ background: var(--tier-F); border-color:var(--tier-F); }
 .pill.tier-pill.active[data-tier="G"]{ background: var(--tier-G); border-color:var(--tier-G); }
+.pill.tier-pill.active[data-tier="H"]{ background: var(--tier-H); border-color:var(--tier-H); }
+.pill.tier-pill.active[data-tier="I"]{ background: var(--tier-I); border-color:var(--tier-I); }
+.pill.tier-pill.active[data-tier="J"]{ background: var(--tier-J); border-color:var(--tier-J); }
+.pill.tier-pill.active[data-tier="K"]{ background: var(--tier-K); border-color:var(--tier-K); }
 
 .select-sort{
   font-family:'JetBrains Mono'; font-size: 11px; color: var(--ink);
@@ -231,13 +248,17 @@ header.top::before{
   font-family:'Oswald'; font-weight:700; font-size: 12px; margin: 0 auto; color:#fff;
 }
 .tier-S{ background: var(--tier-S);}
-.tier-A{ background: var(--tier-A);}
-.tier-B{ background: var(--tier-B);}
-.tier-C{ background: var(--tier-C);}
-.tier-D{ background: var(--tier-D);}
+.tier-A{ background: var(--tier-A); color: var(--bg);}
+.tier-B{ background: var(--tier-B); color: var(--bg);}
+.tier-C{ background: var(--tier-C); color: var(--bg);}
+.tier-D{ background: var(--tier-D); color: var(--bg);}
 .tier-E{ background: var(--tier-E);}
 .tier-F{ background: var(--tier-F);}
 .tier-G{ background: var(--tier-G);}
+.tier-H{ background: var(--tier-H);}
+.tier-I{ background: var(--tier-I);}
+.tier-J{ background: var(--tier-J); color: var(--bg);}
+.tier-K{ background: var(--tier-K);}
 
 .actions{ display:flex; gap: 6px; justify-content:flex-end; align-items:center; }
 .btn{
