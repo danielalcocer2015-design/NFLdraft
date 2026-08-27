@@ -388,8 +388,36 @@ header.top::before{
 .modal-overlay{
   position: fixed; inset:0; background: rgba(0,0,0,0.6); z-index: 100;
   display:none; align-items:center; justify-content:center; padding: 20px;
+  backdrop-filter: blur(3px);
 }
 .modal-overlay.open{ display:flex; }
+
+/* Login gate: a full splash screen, not a dialog over the visible app */
+.login-overlay{
+  flex-direction: column;
+  background:
+    repeating-linear-gradient(0deg, transparent, transparent 78px, rgba(128,128,128,0.05) 78px, rgba(128,128,128,0.05) 80px),
+    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--accent) 20%, var(--bg)) 0%, var(--bg) 62%);
+  backdrop-filter: blur(22px) saturate(0.8);
+  z-index: 200;
+}
+.login-brand{
+  display:flex; flex-direction:column; align-items:center; gap: 6px; margin-bottom: 36px;
+}
+.login-brand .mark{
+  font-family:'Oswald', sans-serif; font-weight:700; font-size: 44px;
+  letter-spacing: 1px; color: var(--ink); text-transform: uppercase;
+}
+.login-brand .mark span{
+  color: var(--accent); text-shadow: 0 0 32px color-mix(in srgb, var(--accent) 65%, transparent);
+}
+.login-brand .sub{
+  font-size: 12px; color: var(--ink-faint); font-family:'JetBrains Mono',monospace; letter-spacing: 3px;
+}
+.login-overlay .modal{ box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+@media (max-width: 480px){
+  .login-brand .mark{ font-size: 32px; }
+}
 .modal{
   background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 24px;
   width: 100%; max-width: 340px;
