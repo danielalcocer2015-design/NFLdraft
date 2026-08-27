@@ -21,7 +21,6 @@ let local = {
 
 let drafted = {};           // id -> { owner, pick, ts }
 let filters = { pos: 'ALL', tier: 'ALL', hideDrafted: true, search: '', sort: 'custom' };
-let historyStack = [];      // { id, prevEntry } — session-only undo stack
 let dragId = null;
 
 let fb = null;              // { firestore module, app, dbInst }
@@ -189,12 +188,6 @@ async function createRoom() {
 }
 
 // ---------- Draft state mutations (unified local/room) ----------
-function recordHistory(id) {
-  historyStack.push({ id, prevEntry: drafted[id] ? { ...drafted[id] } : null });
-  if (historyStack.length > 50) historyStack.shift();
-  updateUndoButtonState();
-}
-
 function writePlayer(id, owner, pick) {
   const entry = { owner, pick: pick ?? null, ts: Date.now() };
   drafted[id] = entry;
@@ -223,36 +216,11 @@ function nextPickNumber() {
 }
 
 function draftPlayer(id, owner, pick) {
-  recordHistory(id);
   writePlayer(id, (owner || 'Jugador').trim() || 'Jugador', pick);
 }
 
 function undoPlayer(id) {
-  recordHistory(id);
   removePlayer(id);
-}
-
-function globalUndo() {
-  const last = historyStack.pop();
-  updateUndoButtonState();
-  if (!last) return;
-  if (last.prevEntry) {
-    drafted[last.id] = last.prevEntry;
-    if (local.roomId && fb) {
-      fb.firestore.updateDoc(roomRef(), { [`drafted.${last.id}`]: last.prevEntry }).catch(e => console.error(e));
-    } else {
-      saveSoloDrafted();
-    }
-  } else {
-    removePlayer(last.id);
-    return; // removePlayer already re-renders
-  }
-  flashSaved(true, 'Deshecho');
-  render();
-}
-
-function updateUndoButtonState() {
-  document.getElementById('undoBtn').disabled = historyStack.length === 0;
 }
 
 // ---------- Filter pills ----------
@@ -506,6 +474,31 @@ function renderRankings() {
   }).join('');
 }
 
+function csvField(val) {
+  const s = String(val);
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadRankingsCsv() {
+  const profile = activeProfile();
+  const header = ['#', 'Jugador', 'Equipo', 'Posición', 'ADP', 'Tier'];
+  const rows = profile.order.map((id, idx) => {
+    const p = PLAYERS_BY_ID.get(id);
+    if (!p) return null;
+    return [idx + 1, p.name, p.team || '', p.pos, fmtAdp(p.adp), effectiveTier(p)];
+  }).filter(Boolean);
+  const csv = [header, ...rows].map(r => r.map(csvField).join(',')).join('\r\n');
+  const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `TapOut - ${profile.name}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 function moveCustom(id, delta) {
   const visible = visibleCustomOrder();
   const visIdx = visible.indexOf(id);
@@ -643,6 +636,7 @@ function closeRoomModal() {
 function updateFiltersVisibility(view) {
   document.getElementById('filtersBar').style.display = view === 'team' ? 'none' : '';
   document.getElementById('sortFilterGroup').style.display = view === 'board' ? '' : 'none';
+  document.getElementById('downloadRankingsBtn').style.display = view === 'rankings' ? '' : 'none';
 }
 
 // ---------- Theme ----------
@@ -678,8 +672,6 @@ function wireEvents() {
         drafted = {};
         saveSoloDrafted();
       }
-      historyStack = [];
-      updateUndoButtonState();
       render();
     }
   });
@@ -790,8 +782,8 @@ function wireEvents() {
     if (confirm(`¿Eliminar el perfil "${activeProfile().name}"?`)) deleteActiveProfile();
   });
 
-  // Undo
-  document.getElementById('undoBtn').addEventListener('click', globalUndo);
+  // Download rankings
+  document.getElementById('downloadRankingsBtn').addEventListener('click', downloadRankingsCsv);
 
   // Theme
   document.getElementById('themeToggle').addEventListener('click', () => {
@@ -874,7 +866,6 @@ async function init() {
   applyTheme();
   buildFilterPills();
   wireEvents();
-  updateUndoButtonState();
   updateRoomUI();
   updateFiltersVisibility('board');
   filters.sort = local.sort;
