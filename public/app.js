@@ -319,18 +319,21 @@ function isMine(entry) {
   return !!entry && entry.owner.trim().toLowerCase() === local.myName.trim().toLowerCase();
 }
 
+// ---------- Filtering (shared by the board and the rankings list) ----------
+function matchesFilters(p) {
+  if (filters.pos !== 'ALL' && p.pos !== filters.pos) return false;
+  if (filters.tier !== 'ALL' && effectiveTier(p) !== filters.tier) return false;
+  if (filters.search) {
+    const hay = (p.name + ' ' + p.team).toLowerCase();
+    if (!hay.includes(filters.search)) return false;
+  }
+  if (filters.hideDrafted && drafted[p.id]) return false;
+  return true;
+}
+
 // ---------- Board ----------
 function filteredPlayers() {
-  return PLAYERS.filter(p => {
-    if (filters.pos !== 'ALL' && p.pos !== filters.pos) return false;
-    if (filters.tier !== 'ALL' && effectiveTier(p) !== filters.tier) return false;
-    if (filters.search) {
-      const hay = (p.name + ' ' + p.team).toLowerCase();
-      if (!hay.includes(filters.search)) return false;
-    }
-    if (filters.hideDrafted && drafted[p.id]) return false;
-    return true;
-  });
+  return PLAYERS.filter(matchesFilters);
 }
 
 function sortPlayers(list) {
@@ -467,18 +470,29 @@ function renderProfileSelect() {
   if (sortOption) sortOption.textContent = `Mis rankings (${activeProfile().name})`;
 }
 
+function visibleCustomOrder() {
+  return activeProfile().order.filter(id => {
+    const p = PLAYERS_BY_ID.get(id);
+    return p && matchesFilters(p);
+  });
+}
+
 function renderRankings() {
   renderProfileSelect();
   const el = document.getElementById('rankingsList');
   const order = activeProfile().order;
-  el.innerHTML = order.map((id, idx) => {
+  const visible = visibleCustomOrder();
+  if (visible.length === 0) {
+    el.innerHTML = '<div class="empty-state">Ningún jugador coincide con estos filtros.</div>';
+    return;
+  }
+  el.innerHTML = visible.map(id => {
     const p = PLAYERS_BY_ID.get(id);
-    if (!p) return '';
     const tier = effectiveTier(p);
     const tierOptions = TIERS.map(t => `<option value="${t}" ${t === tier ? 'selected' : ''}>${t}</option>`).join('');
     return `<div class="rank-row" draggable="true" data-id="${id}">
       <div class="drag-handle">⋮⋮</div>
-      <div class="rank-num">${idx + 1}</div>
+      <div class="rank-num">${order.indexOf(id) + 1}</div>
       <div class="pinfo"><span class="pname">${escapeHtml(p.name)}</span><span class="pteam">${p.team || ''}</span></div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
       <div class="rank-adp" title="ADP de referencia">${fmtAdp(p.adp)}</div>
@@ -492,11 +506,15 @@ function renderRankings() {
 }
 
 function moveCustom(id, delta) {
+  const visible = visibleCustomOrder();
+  const visIdx = visible.indexOf(id);
+  const neighborId = visible[visIdx + delta];
+  if (visIdx === -1 || neighborId === undefined) return;
   const order = activeProfile().order;
-  const idx = order.indexOf(id);
-  const newIdx = idx + delta;
-  if (idx === -1 || newIdx < 0 || newIdx >= order.length) return;
-  [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+  const from = order.indexOf(id);
+  order.splice(from, 1);
+  const neighborIdx = order.indexOf(neighborId);
+  order.splice(delta < 0 ? neighborIdx : neighborIdx + 1, 0, id);
   saveLocal();
   render();
 }
@@ -504,9 +522,10 @@ function moveCustom(id, delta) {
 function reorderCustom(dragId, targetId) {
   const order = activeProfile().order;
   const from = order.indexOf(dragId);
-  const to = order.indexOf(targetId);
+  let to = order.indexOf(targetId);
   if (from === -1 || to === -1) return;
   order.splice(from, 1);
+  if (from < to) to -= 1;
   order.splice(to, 0, dragId);
   saveLocal();
   render();
@@ -612,6 +631,11 @@ function closeRoomModal() {
   document.getElementById('roomModalOverlay').classList.remove('open');
 }
 
+function updateFiltersVisibility(view) {
+  document.getElementById('filtersBar').style.display = view === 'team' ? 'none' : '';
+  document.getElementById('sortFilterGroup').style.display = view === 'board' ? '' : 'none';
+}
+
 // ---------- Theme ----------
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', local.theme);
@@ -678,6 +702,7 @@ function wireEvents() {
     const view = btn.dataset.view;
     document.getElementById('viewRoot').className = 'view-root view-' + view;
     [...document.getElementById('navTabs').querySelectorAll('button')].forEach(b => b.classList.toggle('active', b === btn));
+    updateFiltersVisibility(view);
     render();
   });
 
@@ -825,6 +850,7 @@ async function init() {
   wireEvents();
   updateUndoButtonState();
   updateRoomUI();
+  updateFiltersVisibility('board');
   filters.sort = local.sort;
   document.getElementById('sortSelect').value = local.sort;
 
