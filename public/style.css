@@ -370,6 +370,20 @@ header.top::before{
   background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
   border-radius: 4px; padding: 4px 2px; cursor:pointer;
 }
+/* Match the tier-chip colors shown on the board */
+.tier-select.tier-S{ background: var(--tier-S); border-color: var(--tier-S); color: #fff; }
+.tier-select.tier-A{ background: var(--tier-A); border-color: var(--tier-A); color: var(--bg); }
+.tier-select.tier-B{ background: var(--tier-B); border-color: var(--tier-B); color: var(--bg); }
+.tier-select.tier-C{ background: var(--tier-C); border-color: var(--tier-C); color: var(--bg); }
+.tier-select.tier-D{ background: var(--tier-D); border-color: var(--tier-D); color: var(--bg); }
+.tier-select.tier-E{ background: var(--tier-E); border-color: var(--tier-E); color: #fff; }
+.tier-select.tier-F{ background: var(--tier-F); border-color: var(--tier-F); color: #fff; }
+.tier-select.tier-G{ background: var(--tier-G); border-color: var(--tier-G); color: #fff; }
+.tier-select.tier-H{ background: var(--tier-H); border-color: var(--tier-H); color: #fff; }
+.tier-select.tier-I{ background: var(--tier-I); border-color: var(--tier-I); color: #fff; }
+.tier-select.tier-J{ background: var(--tier-J); border-color: var(--tier-J); color: var(--bg); }
+.tier-select.tier-K{ background: var(--tier-K); border-color: var(--tier-K); color: #fff; }
+.tier-select option{ background: var(--surface); color: var(--ink); }
 .pos-badge-header, .tier-select-header{
   font-family:'JetBrains Mono'; font-size: 10px; color: var(--ink-faint);
   text-transform: uppercase; letter-spacing: .5px; text-align:center;

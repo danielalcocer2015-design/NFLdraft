@@ -497,7 +497,7 @@ function renderRankings() {
       <div class="pinfo"><span class="pname">${escapeHtml(p.name)}</span><span class="pteam">${p.team || ''}</span></div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
       <div class="rank-adp" title="ADP de referencia">${fmtAdp(p.adp)}</div>
-      <select class="tier-select" data-id="${id}">${tierOptions}</select>
+      <select class="tier-select tier-${tier}" data-id="${id}">${tierOptions}</select>
       <div class="rank-move">
         <button data-move="up" data-id="${id}" title="Subir">▲</button>
         <button data-move="down" data-id="${id}" title="Bajar">▼</button>
