@@ -393,11 +393,16 @@ header.top::before{
   background:
     radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 55%),
     linear-gradient(180deg, rgba(10,18,32,0.82) 0%, rgba(10,18,32,0.6) 45%, rgba(10,18,32,0.85) 100%),
-    url('icons/stadium-field.jpg');
+    url('icons/stadium-field.jpg?v=2');
   background-size: cover;
   background-position: center;
   backdrop-filter: blur(22px) saturate(0.8);
   z-index: 200;
+}
+@media (max-width: 600px){
+  /* Narrow/tall viewports crop most of the wide photo away — bias the
+     visible window toward the live play instead of the static NFL logo. */
+  .login-overlay{ background-position: 68% 38%; }
 }
 .login-brand{
   display:flex; flex-direction:column; align-items:center; gap: 6px; margin-bottom: 36px;
