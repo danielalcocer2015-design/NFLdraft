@@ -8,12 +8,13 @@
 //
 // Ver README.md para las reglas de seguridad recomendadas.
 export const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyBoVUGkby9m1WU7015LZL5baNcNL_50z_I",
+  authDomain: "tapout-app-01.firebaseapp.com",
+  projectId: "tapout-app-01",
+  storageBucket: "tapout-app-01.firebasestorage.app",
+  messagingSenderId: "275001977693",
+  appId: "1:275001977693:web:c75e479b86fa884d0496b4",
+  measurementId: "G-BYCNH7D9KK"
 };
 
 export const firebaseEnabled = firebaseConfig.apiKey !== "YOUR_API_KEY" && !!firebaseConfig.apiKey;
