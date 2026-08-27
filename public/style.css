@@ -318,7 +318,7 @@ header.top{
 .rankings-hint{ font-family:'JetBrains Mono'; font-size: 11px; color: var(--ink-faint); }
 .rankings-list{ display:flex; flex-direction:column; gap: 6px; }
 .rank-row{
-  display:grid; grid-template-columns: 24px 32px 1fr 60px 90px 64px 64px;
+  display:grid; grid-template-columns: 24px 32px 1fr 60px 90px 68px;
   align-items:center; gap: 10px; background: var(--surface); border: 1px solid var(--line);
   border-radius: 8px; padding: 9px 12px; cursor: grab;
 }
@@ -394,8 +394,34 @@ header.top{
     grid-column: 1 / -1;
     justify-content: flex-start;
     flex-wrap: wrap;
+    gap: 8px;
   }
-  .rank-row{ grid-template-columns: 20px 26px 1fr 50px 80px; }
-  .rank-row .rank-move{ display:none; }
+  .row .btn{ padding: 10px 14px; font-size: 12px; min-height: 40px; }
+
+  /* Filter pills scroll horizontally instead of wrapping across many rows */
+  .filters{ flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 10px; }
+  .filter-group{
+    flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch; scrollbar-width: none;
+  }
+  .filter-group::-webkit-scrollbar{ display: none; }
+  .filter-group .pill{ flex-shrink: 0; }
+  .status-toggle{ margin-left: 0; }
+
+  /* Rankings: drag doesn't work on touch, so keep the up/down buttons usable */
+  .rank-row{
+    grid-template-columns: 26px 1fr 46px 64px;
+    row-gap: 8px;
+  }
+  .rank-row .drag-handle{ display: none; }
+  .rank-row .rank-move{
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+  .rank-move button{ width: 44px; height: 38px; font-size: 15px; }
+  .tier-select{ min-height: 34px; }
+
   .search-wrap{ order: 3; max-width: none; flex-basis: 100%; }
 }
