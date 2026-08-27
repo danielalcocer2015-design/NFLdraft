@@ -1,6 +1,6 @@
 // Config de Firebase para el modo multi-usuario en vivo.
 //
-// Draft Night funciona perfectamente sin esto (modo local, un solo
+// TapOut funciona perfectamente sin esto (modo local, un solo
 // dispositivo). Para que varias personas vean el mismo draft en tiempo
 // real, crea un proyecto gratuito en https://console.firebase.google.com,
 // activa "Firestore Database" (modo producción) y pega aquí los valores

@@ -1,4 +1,4 @@
-# Draft Night — Fantasy Board
+# TapOut — Fantasy Board
 
 Tablero de draft para fantasy football. Sitio estático (HTML/CSS/JS sin
 build step) pensado para usarse durante un draft en vivo.
