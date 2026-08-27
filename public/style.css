@@ -350,7 +350,7 @@ header.top::before{
 }
 .rankings-list{ display:flex; flex-direction:column; gap: 6px; }
 .rank-row{
-  display:grid; grid-template-columns: 24px 32px 1fr 60px 60px 90px 68px;
+  display:grid; grid-template-columns: 24px 36px 1fr 60px 60px 90px 68px;
   align-items:center; gap: 10px; background: var(--surface); border: 1px solid var(--line);
   border-radius: 6px; padding: 9px 12px; cursor: grab;
 }
@@ -358,6 +358,14 @@ header.top::before{
 .rank-row.drag-over{ border-color: var(--accent); }
 .drag-handle{ color: var(--ink-faint); font-size: 14px; text-align:center; user-select:none; }
 .rank-num{ font-family:'JetBrains Mono'; font-size: 12px; color: var(--ink-faint); text-align:center; }
+.rank-num-input{
+  font-family:'JetBrains Mono'; font-size: 12px; font-weight: 600; color: var(--ink); text-align:center;
+  width: 100%; background: var(--surface-2); border: 1px solid var(--line); border-radius: 4px;
+  padding: 4px 0; -moz-appearance: textfield;
+}
+.rank-num-input::-webkit-outer-spin-button,
+.rank-num-input::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+.rank-num-input:focus{ outline: none; border-color: var(--accent); }
 .rank-adp{ font-family:'JetBrains Mono'; font-size: 12px; color: var(--ink-muted); text-align:center; }
 .rank-move{ display:flex; gap:2px; }
 .rank-move button{
@@ -495,7 +503,7 @@ header.top::before{
 
   /* Rankings: drag doesn't work on touch, so keep the up/down buttons usable */
   .rank-row{
-    grid-template-columns: 22px 1fr 38px 40px 58px;
+    grid-template-columns: 32px 1fr 38px 40px 58px;
     row-gap: 8px;
   }
   .rank-row .drag-handle{ display: none; }
@@ -509,6 +517,7 @@ header.top::before{
   }
   .rank-move button{ width: 44px; height: 38px; font-size: 15px; }
   .tier-select{ min-height: 34px; }
+  .rank-num-input{ min-height: 34px; font-size: 13px; }
 
   .search-wrap{ order: 3; max-width: none; flex-basis: 100%; }
 }

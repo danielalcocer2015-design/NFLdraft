@@ -493,7 +493,7 @@ function renderRankings() {
     const tierOptions = TIERS.map(t => `<option value="${t}" ${t === tier ? 'selected' : ''}>${t}</option>`).join('');
     return `<div class="rank-row" draggable="true" data-id="${id}">
       <div class="drag-handle">⋮⋮</div>
-      <div class="rank-num">${order.indexOf(id) + 1}</div>
+      <input type="number" class="rank-num-input" data-id="${id}" value="${order.indexOf(id) + 1}" min="1" max="${order.length}" inputmode="numeric">
       <div class="pinfo"><span class="pname">${escapeHtml(p.name)}</span><span class="pteam">${p.team || ''}</span></div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
       <div class="rank-adp" title="ADP de referencia">${fmtAdp(p.adp)}</div>
@@ -516,6 +516,18 @@ function moveCustom(id, delta) {
   order.splice(from, 1);
   const neighborIdx = order.indexOf(neighborId);
   order.splice(delta < 0 ? neighborIdx : neighborIdx + 1, 0, id);
+  saveLocal();
+  render();
+}
+
+function moveCustomToPosition(id, targetPos) {
+  const order = activeProfile().order;
+  const from = order.indexOf(id);
+  if (from === -1) return;
+  const to = Math.max(1, Math.min(targetPos, order.length)) - 1;
+  if (to === from) { render(); return; }
+  order.splice(from, 1);
+  order.splice(to, 0, id);
   saveLocal();
   render();
 }
@@ -692,6 +704,14 @@ function wireEvents() {
     }
   });
   rankingsList.addEventListener('change', e => {
+    const numInput = e.target.closest('.rank-num-input');
+    if (numInput) {
+      const id = parseInt(numInput.dataset.id);
+      const target = parseInt(numInput.value, 10);
+      if (Number.isNaN(target)) render();
+      else moveCustomToPosition(id, target);
+      return;
+    }
     const sel = e.target.closest('.tier-select');
     if (!sel) return;
     const id = parseInt(sel.dataset.id);
@@ -701,6 +721,14 @@ function wireEvents() {
     else tiers[id] = sel.value;
     saveLocal();
     render();
+  });
+  rankingsList.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('rank-num-input')) {
+      e.target.blur();
+    }
+  });
+  rankingsList.addEventListener('focusin', e => {
+    if (e.target.classList.contains('rank-num-input')) e.target.select();
   });
   rankingsList.addEventListener('dragstart', e => {
     const row = e.target.closest('.rank-row'); if (!row) return;
