@@ -51,7 +51,6 @@ function loadLocal() {
       }
     }
   } catch (e) { /* no existing state */ }
-  if (!local.myName) local.myName = 'Yo';
   ensureProfiles();
 }
 
@@ -580,6 +579,15 @@ function closeProfileModal() {
   document.getElementById('profileModalOverlay').classList.remove('open');
 }
 
+function openLoginGate() {
+  document.getElementById('loginNameInput').value = '';
+  document.getElementById('loginModalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('loginNameInput').focus(), 50);
+}
+function closeLoginGate() {
+  document.getElementById('loginModalOverlay').classList.remove('open');
+}
+
 function updateRoomUI() {
   const label = document.getElementById('roomLabel');
   const chip = document.getElementById('roomBtn');
@@ -778,6 +786,28 @@ function wireEvents() {
   document.getElementById('profileModalOverlay').addEventListener('click', e => {
     if (e.target.id === 'profileModalOverlay') closeProfileModal();
   });
+  document.getElementById('logoutBtn').addEventListener('click', () => {
+    local.myName = '';
+    saveLocal();
+    updateRoomUI();
+    render();
+    closeProfileModal();
+    openLoginGate();
+  });
+
+  // Login gate (no password for now — just a name to identify your picks)
+  document.getElementById('loginConfirm').addEventListener('click', () => {
+    const val = document.getElementById('loginNameInput').value.trim();
+    if (!val) { document.getElementById('loginNameInput').focus(); return; }
+    local.myName = val;
+    saveLocal();
+    updateRoomUI();
+    render();
+    closeLoginGate();
+  });
+  document.getElementById('loginNameInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('loginConfirm').click();
+  });
 
   // Room / multiplayer
   document.getElementById('roomBtn').addEventListener('click', openRoomModal);
@@ -829,5 +859,7 @@ async function init() {
     loadSoloDrafted();
     render();
   }
+
+  if (!local.myName) openLoginGate();
 }
 init();

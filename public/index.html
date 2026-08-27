@@ -22,7 +22,7 @@
         <input type="text" id="searchInput" placeholder="Buscar jugador o equipo…">
       </div>
       <div class="header-actions">
-        <button class="chip-btn" id="profileBtn" title="Tu nombre en el draft"><span>👤</span><span id="profileLabel">Yo</span></button>
+        <button class="chip-btn" id="profileBtn" title="Tu nombre en el draft"><span>👤</span><span id="profileLabel">—</span></button>
         <button class="chip-btn" id="roomBtn" title="Multijugador en vivo"><span class="dot"></span><span id="roomLabel">Local</span></button>
         <button class="icon-btn" id="undoBtn" title="Deshacer última jugada" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
@@ -121,6 +121,20 @@
     <div class="modal-actions">
       <button class="btn-secondary" id="profileCancel">Cancelar</button>
       <button class="btn-primary" id="profileConfirm">Guardar</button>
+    </div>
+    <button class="reset-link" id="logoutBtn">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="loginModalOverlay">
+  <div class="modal">
+    <h4>Bienvenido a Draft Night</h4>
+    <p>Regístrate con tu nombre para empezar — así sabemos cuáles jugadores son tuyos en el draft. Sin contraseña, por ahora.</p>
+    <div class="field">
+      <input type="text" id="loginNameInput" placeholder="Tu nombre" maxlength="24">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-primary" id="loginConfirm" style="flex:none; width:100%;">Entrar</button>
     </div>
   </div>
 </div>
