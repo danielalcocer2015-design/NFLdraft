@@ -391,8 +391,11 @@ header.top::before{
 .login-overlay{
   flex-direction: column;
   background:
-    repeating-linear-gradient(0deg, transparent, transparent 78px, rgba(128,128,128,0.05) 78px, rgba(128,128,128,0.05) 80px),
-    radial-gradient(circle at 50% 32%, color-mix(in srgb, var(--accent) 20%, var(--bg)) 0%, var(--bg) 62%);
+    radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(10,18,32,0.82) 0%, rgba(10,18,32,0.6) 45%, rgba(10,18,32,0.85) 100%),
+    url('icons/stadium-field.jpg');
+  background-size: cover;
+  background-position: center;
   backdrop-filter: blur(22px) saturate(0.8);
   z-index: 200;
 }
