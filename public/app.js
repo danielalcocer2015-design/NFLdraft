@@ -15,11 +15,12 @@ let local = {
   theme: 'dark',
   roomId: null,
   rankingProfiles: {},   // id -> { name, order: [ids], tiers: {id: tier} }
-  activeProfileId: null
+  activeProfileId: null,
+  sort: 'custom'          // board order: defaults to your personal ranking
 };
 
 let drafted = {};           // id -> { owner, pick, ts }
-let filters = { pos: 'ALL', tier: 'ALL', hideDrafted: true, search: '', sort: 'adp' };
+let filters = { pos: 'ALL', tier: 'ALL', hideDrafted: true, search: '', sort: 'custom' };
 let pendingPlayerId = null;
 let pendingOwnerDefault = '';
 let historyStack = [];      // { id, prevEntry } — session-only undo stack
@@ -300,6 +301,8 @@ function buildFilterPills() {
 
   document.getElementById('sortSelect').addEventListener('change', e => {
     filters.sort = e.target.value;
+    local.sort = e.target.value;
+    saveLocal();
     renderBoard();
   });
 }
@@ -478,6 +481,7 @@ function renderRankings() {
       <div class="rank-num">${idx + 1}</div>
       <div class="pinfo"><span class="pname">${escapeHtml(p.name)}</span><span class="pteam">${p.team || ''}</span></div>
       <div class="pos-badge pos-${p.pos}">${p.pos}</div>
+      <div class="rank-adp" title="ADP de referencia">${fmtAdp(p.adp)}</div>
       <select class="tier-select" data-id="${id}">${tierOptions}</select>
       <div class="rank-move">
         <button data-move="up" data-id="${id}" title="Subir">▲</button>
@@ -494,7 +498,7 @@ function moveCustom(id, delta) {
   if (idx === -1 || newIdx < 0 || newIdx >= order.length) return;
   [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
   saveLocal();
-  renderRankings();
+  render();
 }
 
 function reorderCustom(dragId, targetId) {
@@ -505,7 +509,7 @@ function reorderCustom(dragId, targetId) {
   order.splice(from, 1);
   order.splice(to, 0, dragId);
   saveLocal();
-  renderRankings();
+  render();
 }
 
 // ---------- Ranking profiles (e.g. "Draft 12 equipos" vs "Draft 10 equipos") ----------
@@ -674,6 +678,7 @@ function wireEvents() {
     const view = btn.dataset.view;
     document.getElementById('viewRoot').className = 'view-root view-' + view;
     [...document.getElementById('navTabs').querySelectorAll('button')].forEach(b => b.classList.toggle('active', b === btn));
+    render();
   });
 
   // Rankings interactions
@@ -820,6 +825,8 @@ async function init() {
   wireEvents();
   updateUndoButtonState();
   updateRoomUI();
+  filters.sort = local.sort;
+  document.getElementById('sortSelect').value = local.sort;
 
   const urlRoom = new URL(location.href).searchParams.get('room');
   if (urlRoom && firebaseEnabled) {

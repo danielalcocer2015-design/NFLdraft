@@ -329,7 +329,7 @@ header.top{
 }
 .rankings-list{ display:flex; flex-direction:column; gap: 6px; }
 .rank-row{
-  display:grid; grid-template-columns: 24px 32px 1fr 60px 90px 68px;
+  display:grid; grid-template-columns: 24px 32px 1fr 60px 60px 90px 68px;
   align-items:center; gap: 10px; background: var(--surface); border: 1px solid var(--line);
   border-radius: 8px; padding: 9px 12px; cursor: grab;
 }
@@ -337,6 +337,7 @@ header.top{
 .rank-row.drag-over{ border-color: var(--amber); }
 .drag-handle{ color: var(--ink-faint); font-size: 14px; text-align:center; user-select:none; }
 .rank-num{ font-family:'JetBrains Mono'; font-size: 12px; color: var(--ink-faint); text-align:center; }
+.rank-adp{ font-family:'JetBrains Mono'; font-size: 12px; color: var(--ink-muted); text-align:center; }
 .rank-move{ display:flex; gap:2px; }
 .rank-move button{
   width: 26px; height: 26px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface-2);
@@ -348,6 +349,14 @@ header.top{
   background: var(--surface-2); border: 1px solid var(--line); color: var(--ink);
   border-radius: 5px; padding: 4px 2px; cursor:pointer;
 }
+.pos-badge-header, .tier-select-header{
+  font-family:'JetBrains Mono'; font-size: 10px; color: var(--ink-faint);
+  text-transform: uppercase; letter-spacing: .5px; text-align:center;
+}
+.rank-header{
+  background: transparent; border: none; cursor: default; padding: 0 12px; margin-bottom: 2px;
+}
+.rank-header .rank-adp{ font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
 
 /* Modal */
 .modal-overlay{
@@ -421,10 +430,12 @@ header.top{
 
   /* Rankings: drag doesn't work on touch, so keep the up/down buttons usable */
   .rank-row{
-    grid-template-columns: 26px 1fr 46px 64px;
+    grid-template-columns: 22px 1fr 38px 40px 58px;
     row-gap: 8px;
   }
   .rank-row .drag-handle{ display: none; }
+  .rank-header .rank-adp{ font-size: 9px; }
+  .rank-header .pos-badge-header, .rank-header .tier-select-header{ font-size: 9px; }
   .rank-row .rank-move{
     display: flex;
     grid-column: 1 / -1;
