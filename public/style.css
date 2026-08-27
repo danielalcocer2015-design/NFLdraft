@@ -316,6 +316,17 @@ header.top{
   color: var(--ink-muted); font-weight:600; margin:0;
 }
 .rankings-hint{ font-family:'JetBrains Mono'; font-size: 11px; color: var(--ink-faint); }
+.profile-bar{
+  display:flex; align-items:center; gap: 8px; flex-wrap: wrap;
+  margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid var(--line);
+}
+.profile-bar .select-sort{ font-size: 12px; padding: 7px 10px; min-width: 160px; flex-shrink: 0; }
+@media (max-width: 880px){
+  .profile-bar{ flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+  .profile-bar::-webkit-scrollbar{ display: none; }
+  .profile-bar .select-sort{ min-width: 130px; }
+  .profile-bar .chip-btn{ flex-shrink: 0; }
+}
 .rankings-list{ display:flex; flex-direction:column; gap: 6px; }
 .rank-row{
   display:grid; grid-template-columns: 24px 32px 1fr 60px 90px 68px;

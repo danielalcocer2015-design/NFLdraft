@@ -12,10 +12,10 @@ const SOLO_DRAFT_KEY = 'draftnight-solo-drafted';
 let local = {
   myName: '',
   targets: { ...DEFAULT_TARGETS },
-  customOrder: [],
-  customTiers: {},
   theme: 'dark',
-  roomId: null
+  roomId: null,
+  rankingProfiles: {},   // id -> { name, order: [ids], tiers: {id: tier} }
+  activeProfileId: null
 };
 
 let drafted = {};           // id -> { owner, pick, ts }
@@ -38,13 +38,22 @@ function loadLocal() {
         ...local,
         ...parsed,
         targets: { ...DEFAULT_TARGETS, ...(parsed.targets || {}) },
-        customTiers: parsed.customTiers || {},
-        customOrder: Array.isArray(parsed.customOrder) ? parsed.customOrder : []
+        rankingProfiles: parsed.rankingProfiles || {}
       };
+      // Migrate the old single-profile shape (pre-multi-profile) into a real profile.
+      if (Object.keys(local.rankingProfiles).length === 0 && (parsed.customOrder || parsed.customTiers)) {
+        const id = genId();
+        local.rankingProfiles[id] = {
+          name: 'Mi ranking',
+          order: Array.isArray(parsed.customOrder) ? parsed.customOrder : [],
+          tiers: parsed.customTiers || {}
+        };
+        local.activeProfileId = id;
+      }
     }
   } catch (e) { /* no existing state */ }
   if (!local.myName) local.myName = 'Yo';
-  ensureCustomOrder();
+  ensureProfiles();
 }
 
 let saveLocalTimeout;
@@ -55,18 +64,42 @@ function saveLocal() {
   }, 200);
 }
 
-function ensureCustomOrder() {
-  const known = new Set(local.customOrder);
+function genId() {
+  return 'rp_' + Math.random().toString(36).slice(2, 10);
+}
+
+function defaultOrder() {
+  return [...PLAYERS].sort((a, b) => (a.adp ?? 999) - (b.adp ?? 999)).map(p => p.id);
+}
+
+function ensureProfileOrder(profile) {
+  const known = new Set(profile.order);
   const missing = PLAYERS
     .filter(p => !known.has(p.id))
     .sort((a, b) => (a.adp ?? 999) - (b.adp ?? 999))
     .map(p => p.id);
-  const valid = local.customOrder.filter(id => PLAYERS_BY_ID.has(id));
-  local.customOrder = [...valid, ...missing];
+  const valid = profile.order.filter(id => PLAYERS_BY_ID.has(id));
+  profile.order = [...valid, ...missing];
+}
+
+function ensureProfiles() {
+  if (Object.keys(local.rankingProfiles).length === 0) {
+    const id = genId();
+    local.rankingProfiles[id] = { name: 'Mi ranking', order: defaultOrder(), tiers: {} };
+    local.activeProfileId = id;
+  }
+  if (!local.rankingProfiles[local.activeProfileId]) {
+    local.activeProfileId = Object.keys(local.rankingProfiles)[0];
+  }
+  Object.values(local.rankingProfiles).forEach(ensureProfileOrder);
+}
+
+function activeProfile() {
+  return local.rankingProfiles[local.activeProfileId];
 }
 
 function effectiveTier(player) {
-  return local.customTiers[player.id] || player.tier;
+  return activeProfile().tiers[player.id] || player.tier;
 }
 
 // ---------- Solo (single-device) draft persistence ----------
@@ -302,7 +335,7 @@ function sortPlayers(list) {
     return [...list].sort((a, b) => a.name.localeCompare(b.name));
   }
   if (filters.sort === 'custom') {
-    const order = local.customOrder;
+    const order = activeProfile().order;
     return [...list].sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
   }
   return [...list].sort((a, b) => (a.adp ?? 999) - (b.adp ?? 999));
@@ -421,9 +454,20 @@ function renderRosterList() {
 }
 
 // ---------- Rankings (drag & drop custom order + tier editor) ----------
+function renderProfileSelect() {
+  const sel = document.getElementById('profileSelect');
+  const profiles = local.rankingProfiles;
+  sel.innerHTML = Object.keys(profiles).map(id =>
+    `<option value="${id}" ${id === local.activeProfileId ? 'selected' : ''}>${escapeHtml(profiles[id].name)}</option>`
+  ).join('');
+  const sortOption = document.querySelector('#sortSelect option[value="custom"]');
+  if (sortOption) sortOption.textContent = `Mis rankings (${activeProfile().name})`;
+}
+
 function renderRankings() {
+  renderProfileSelect();
   const el = document.getElementById('rankingsList');
-  const order = local.customOrder;
+  const order = activeProfile().order;
   el.innerHTML = order.map((id, idx) => {
     const p = PLAYERS_BY_ID.get(id);
     if (!p) return '';
@@ -444,7 +488,7 @@ function renderRankings() {
 }
 
 function moveCustom(id, delta) {
-  const order = local.customOrder;
+  const order = activeProfile().order;
   const idx = order.indexOf(id);
   const newIdx = idx + delta;
   if (idx === -1 || newIdx < 0 || newIdx >= order.length) return;
@@ -454,7 +498,7 @@ function moveCustom(id, delta) {
 }
 
 function reorderCustom(dragId, targetId) {
-  const order = local.customOrder;
+  const order = activeProfile().order;
   const from = order.indexOf(dragId);
   const to = order.indexOf(targetId);
   if (from === -1 || to === -1) return;
@@ -462,6 +506,35 @@ function reorderCustom(dragId, targetId) {
   order.splice(to, 0, dragId);
   saveLocal();
   renderRankings();
+}
+
+// ---------- Ranking profiles (e.g. "Draft 12 equipos" vs "Draft 10 equipos") ----------
+function createProfile(name, sourceProfile) {
+  const id = genId();
+  local.rankingProfiles[id] = sourceProfile
+    ? { name, order: [...sourceProfile.order], tiers: { ...sourceProfile.tiers } }
+    : { name, order: defaultOrder(), tiers: {} };
+  local.activeProfileId = id;
+  saveLocal();
+  render();
+}
+
+function renameActiveProfile(name) {
+  activeProfile().name = name;
+  saveLocal();
+  render();
+}
+
+function deleteActiveProfile() {
+  const ids = Object.keys(local.rankingProfiles);
+  if (ids.length <= 1) {
+    alert('Necesitas al menos un perfil de ranking.');
+    return;
+  }
+  delete local.rankingProfiles[local.activeProfileId];
+  local.activeProfileId = Object.keys(local.rankingProfiles)[0];
+  saveLocal();
+  render();
 }
 
 // ---------- Render all ----------
@@ -617,8 +690,9 @@ function wireEvents() {
     if (!sel) return;
     const id = parseInt(sel.dataset.id);
     const player = PLAYERS_BY_ID.get(id);
-    if (sel.value === player.tier) delete local.customTiers[id];
-    else local.customTiers[id] = sel.value;
+    const tiers = activeProfile().tiers;
+    if (sel.value === player.tier) delete tiers[id];
+    else tiers[id] = sel.value;
     saveLocal();
     render();
   });
@@ -650,13 +724,36 @@ function wireEvents() {
   });
 
   document.getElementById('resetRankingsBtn').addEventListener('click', () => {
-    if (confirm('¿Restablecer tu orden y tiers personalizados?')) {
-      local.customOrder = [];
-      local.customTiers = {};
-      ensureCustomOrder();
+    if (confirm('¿Restablecer el orden y los tiers de este perfil?')) {
+      const profile = activeProfile();
+      profile.order = defaultOrder();
+      profile.tiers = {};
       saveLocal();
       render();
     }
+  });
+
+  // Ranking profiles
+  document.getElementById('profileSelect').addEventListener('change', e => {
+    local.activeProfileId = e.target.value;
+    saveLocal();
+    render();
+  });
+  document.getElementById('newProfileBtn').addEventListener('click', () => {
+    const name = prompt('Nombre del nuevo perfil (ej. "Draft 12 equipos"):');
+    if (name && name.trim()) createProfile(name.trim());
+  });
+  document.getElementById('duplicateProfileBtn').addEventListener('click', () => {
+    const base = activeProfile();
+    const name = prompt('Nombre para la copia:', base.name + ' (copia)');
+    if (name && name.trim()) createProfile(name.trim(), base);
+  });
+  document.getElementById('renameProfileBtn').addEventListener('click', () => {
+    const name = prompt('Nuevo nombre del perfil:', activeProfile().name);
+    if (name && name.trim()) renameActiveProfile(name.trim());
+  });
+  document.getElementById('deleteProfileBtn').addEventListener('click', () => {
+    if (confirm(`¿Eliminar el perfil "${activeProfile().name}"?`)) deleteActiveProfile();
   });
 
   // Undo
