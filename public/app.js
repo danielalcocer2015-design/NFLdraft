@@ -25,6 +25,8 @@ let dragId = null;
 
 let fb = null;              // { firestore module, app, dbInst }
 let roomUnsub = null;
+let profileUnsub = null;
+let applyingRemoteProfile = false;
 
 // ---------- Local persistence ----------
 function loadLocal() {
@@ -58,6 +60,7 @@ function saveLocal() {
   clearTimeout(saveLocalTimeout);
   saveLocalTimeout = setTimeout(() => {
     try { localStorage.setItem(LOCAL_KEY, JSON.stringify(local)); } catch (e) { /* storage unavailable */ }
+    syncProfileToCloud();
   }, 200);
 }
 
@@ -185,6 +188,58 @@ async function createRoom() {
   url.searchParams.set('room', code);
   history.replaceState(null, '', url.toString());
   await joinRoom(code);
+}
+
+// ---------- Cross-device account sync (your rankings, by name — no password) ----------
+function userKey() {
+  return local.myName.trim().toLowerCase();
+}
+
+function userRef() {
+  return fb.firestore.doc(fb.dbInst, 'users', userKey());
+}
+
+async function subscribeUserProfile() {
+  if (!firebaseEnabled || !local.myName) return;
+  await ensureFirebase();
+  if (!fb) return;
+  if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+  profileUnsub = fb.firestore.onSnapshot(userRef(), snap => {
+    if (snap.exists()) {
+      const data = snap.data();
+      applyingRemoteProfile = true;
+      if (data.rankingProfiles) local.rankingProfiles = data.rankingProfiles;
+      if (data.activeProfileId) local.activeProfileId = data.activeProfileId;
+      if (data.targets) local.targets = { ...DEFAULT_TARGETS, ...data.targets };
+      ensureProfiles();
+      try { localStorage.setItem(LOCAL_KEY, JSON.stringify(local)); } catch (e) { /* storage unavailable */ }
+      applyingRemoteProfile = false;
+      render();
+    } else {
+      syncProfileToCloud();
+    }
+  }, err => {
+    console.error(err);
+    flashSaved(false, 'Sin conexión (rankings)');
+  });
+}
+
+function unsubscribeUserProfile() {
+  if (profileUnsub) { profileUnsub(); profileUnsub = null; }
+}
+
+function syncProfileToCloud() {
+  if (applyingRemoteProfile || !firebaseEnabled || !local.myName || !fb) return;
+  const payload = {
+    rankingProfiles: local.rankingProfiles,
+    activeProfileId: local.activeProfileId,
+    targets: local.targets,
+    updatedAt: fb.firestore.serverTimestamp()
+  };
+  fb.firestore.setDoc(userRef(), payload, { merge: true }).catch(e => {
+    console.error(e);
+    flashSaved(false, 'Sin conexión (rankings)');
+  });
 }
 
 // ---------- Draft state mutations (unified local/room) ----------
@@ -796,8 +851,11 @@ function wireEvents() {
   document.getElementById('profileBtn').addEventListener('click', openProfileModal);
   document.getElementById('profileConfirm').addEventListener('click', () => {
     const val = document.getElementById('profileInput').value.trim();
-    if (val) local.myName = val;
-    saveLocal();
+    if (val && val !== local.myName) {
+      local.myName = val;
+      saveLocal();
+      subscribeUserProfile();
+    }
     updateRoomUI();
     render();
     closeProfileModal();
@@ -807,6 +865,7 @@ function wireEvents() {
     if (e.target.id === 'profileModalOverlay') closeProfileModal();
   });
   document.getElementById('logoutBtn').addEventListener('click', () => {
+    unsubscribeUserProfile();
     local.myName = '';
     saveLocal();
     updateRoomUI();
@@ -824,6 +883,7 @@ function wireEvents() {
     updateRoomUI();
     render();
     closeLoginGate();
+    subscribeUserProfile();
   });
   document.getElementById('loginNameInput').addEventListener('keydown', e => {
     if (e.key === 'Enter') document.getElementById('loginConfirm').click();
@@ -880,5 +940,6 @@ async function init() {
   }
 
   if (!local.myName) openLoginGate();
+  else subscribeUserProfile();
 }
 init();

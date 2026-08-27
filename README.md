@@ -7,14 +7,17 @@ build step) pensado para usarse durante un draft en vivo.
 
 - Board de jugadores con filtros por posición, tier y búsqueda, y con
   ordenamiento por ADP, alfabético o por tus rankings personalizados.
-- **Mis Rankings**: pestaña para reordenar jugadores a tu gusto (arrastrar
-  o con las flechas ▲▼) y editar el tier de cada uno. Es personal — se
-  guarda en tu navegador, no se comparte con la sala.
+- **Mis Rankings**: pestaña para reordenar jugadores a tu gusto (arrastrar,
+  escribir el # o usar las flechas ▲▼), editar el tier de cada uno, y
+  descargarlos como CSV. Es personal — no se comparte con la sala.
 - **Mi equipo**: roster con objetivos por posición, valor vs. ADP de cada
   pick, y botón para reiniciar el draft.
-- Modo claro/oscuro, deshacer última jugada, y todo funciona en mobile.
+- Modo claro/oscuro, deshacer un pick individual, y todo funciona en mobile.
 - **Multijugador en vivo** (opcional): comparte un código de sala para que
   varias personas vean el mismo draft actualizarse en tiempo real.
+- **Sincronizar tus rankings entre dispositivos** (opcional): inicia sesión
+  con el mismo nombre en tu celular y tu computadora y tus rankings/tiers
+  se mantienen sincronizados automáticamente entre ambos.
 
 ## Uso local
 
@@ -27,11 +30,19 @@ npx http-server public
 python3 -m http.server 8000 --directory public
 ```
 
-## Activar el multijugador en vivo (opcional)
+## Activar multijugador y sincronización entre dispositivos (opcional)
 
-Sin configurar nada, la app funciona en **modo local**: el draft se guarda
-solo en tu navegador. Para que varias personas compartan el mismo draft en
-tiempo real:
+Sin configurar nada, la app funciona en **modo local**: el draft y tus
+rankings se guardan solo en el navegador de ese dispositivo. Configurando
+un proyecto gratuito de Firebase (una sola vez) se activan dos cosas:
+
+- **Multijugador en vivo**: varias personas comparten el mismo draft en
+  tiempo real con un código de sala.
+- **Rankings sincronizados**: inicias sesión con tu nombre en el celular y
+  en la computadora, y tus rankings/tiers se mantienen iguales en ambos
+  automáticamente (sin necesidad de estar en una sala).
+
+Pasos:
 
 1. Crea un proyecto gratuito en la [consola de Firebase](https://console.firebase.google.com).
 2. Activa **Firestore Database** (modo producción, cualquier región).
@@ -39,15 +50,19 @@ tiempo real:
    objeto `firebaseConfig`.
 4. Pégalo en `public/firebase-config.js`, reemplazando los valores
    `YOUR_...`.
-5. En Firestore, publica las reglas de `firestore.rules` (están pensadas
-   para este caso de uso: sin datos sensibles, cualquiera con el código de
-   sala puede leer/escribir esa sala).
-6. Despliega. En la app, abre el ícono de multijugador (junto a tu
-   nombre) → **Crear sala nueva**, y comparte el enlace con `?room=CÓDIGO`.
+5. En Firestore, publica las reglas de `firestore.rules`.
+6. Despliega. Para el draft en vivo: abre el ícono de multijugador (junto
+   a tu nombre) → **Crear sala nueva**, y comparte el enlace con
+   `?room=CÓDIGO`. Para sincronizar tus rankings: solo inicia sesión con el
+   mismo nombre en cada dispositivo — se sincronizan solos.
 
 Los valores de `firebaseConfig` no son secretos (Firebase los protege con
 las reglas de seguridad, no ocultándolos), así que es seguro publicarlos
-en el repositorio y en el sitio estático.
+en el repositorio y en el sitio estático. Como el login sigue sin
+contraseña, tus rankings sincronizados usan tu nombre (en minúsculas) como
+identificador — igual que el código de sala, cualquiera que adivine
+exactamente tu nombre podría leer o editar tus rankings, así que usa algo
+no obvio si te preocupa.
 
 ## Despliegue en GitHub Pages
 
