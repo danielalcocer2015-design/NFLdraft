@@ -21,8 +21,6 @@ let local = {
 
 let drafted = {};           // id -> { owner, pick, ts }
 let filters = { pos: 'ALL', tier: 'ALL', hideDrafted: true, search: '', sort: 'custom' };
-let pendingPlayerId = null;
-let pendingOwnerDefault = '';
 let historyStack = [];      // { id, prevEntry } — session-only undo stack
 let dragId = null;
 
@@ -219,6 +217,10 @@ function removePlayer(id) {
   }
   flashSaved(true);
   render();
+}
+
+function nextPickNumber() {
+  return Object.keys(drafted).length + 1;
 }
 
 function draftPlayer(id, owner, pick) {
@@ -569,19 +571,6 @@ function render() {
 }
 
 // ---------- Modals ----------
-function openPickModal(id, defaultOwner) {
-  pendingPlayerId = id;
-  pendingOwnerDefault = defaultOwner;
-  document.getElementById('ownerInput').value = defaultOwner;
-  document.getElementById('pickInput').value = '';
-  document.getElementById('pickModalOverlay').classList.add('open');
-  setTimeout(() => document.getElementById('ownerInput').focus(), 50);
-}
-function closePickModal() {
-  document.getElementById('pickModalOverlay').classList.remove('open');
-  pendingPlayerId = null;
-}
-
 function openProfileModal() {
   document.getElementById('profileInput').value = local.myName;
   document.getElementById('profileModalOverlay').classList.add('open');
@@ -653,33 +642,12 @@ function wireEvents() {
     const id = parseInt(btn.dataset.id);
     const action = btn.dataset.action;
     if (action === 'mine') {
-      openPickModal(id, local.myName);
+      draftPlayer(id, local.myName, nextPickNumber());
     } else if (action === 'other') {
-      openPickModal(id, '');
+      draftPlayer(id, 'Rival', nextPickNumber());
     } else if (action === 'undo') {
       undoPlayer(id);
     }
-  });
-
-  document.getElementById('pickModalConfirm').addEventListener('click', () => {
-    if (pendingPlayerId === null) return;
-    const owner = document.getElementById('ownerInput').value;
-    const raw = document.getElementById('pickInput').value;
-    const pick = raw ? parseInt(raw) : null;
-    draftPlayer(pendingPlayerId, owner, (pick && pick > 0) ? pick : null);
-    closePickModal();
-  });
-  document.getElementById('pickModalCancel').addEventListener('click', closePickModal);
-  document.getElementById('pickModalOverlay').addEventListener('click', e => {
-    if (e.target.id === 'pickModalOverlay') closePickModal();
-  });
-  document.getElementById('pickInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('pickModalConfirm').click();
-    if (e.key === 'Escape') closePickModal();
-  });
-  document.getElementById('ownerInput').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('pickInput').focus();
-    if (e.key === 'Escape') closePickModal();
   });
 
   document.getElementById('resetBtn').addEventListener('click', () => {
