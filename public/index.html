@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Draft Night — Fantasy Board</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="top-inner">
+      <div class="brand">
+        <div class="mark">Draft<span>Night</span></div>
+        <div class="sub">FANTASY BOARD · 2026</div>
+      </div>
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="searchInput" placeholder="Buscar jugador o equipo…">
+      </div>
+      <div class="header-actions">
+        <button class="chip-btn" id="profileBtn" title="Tu nombre en el draft"><span>👤</span><span id="profileLabel">Yo</span></button>
+        <button class="chip-btn" id="roomBtn" title="Multijugador en vivo"><span class="dot"></span><span id="roomLabel">Local</span></button>
+        <button class="icon-btn" id="undoBtn" title="Deshacer última jugada" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 14 4 9 9 4"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>
+        </button>
+        <button class="icon-btn" id="themeToggle" title="Cambiar tema">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="themeIcon"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="nav-tabs" id="navTabs">
+    <button class="active" data-view="board">Board</button>
+    <button data-view="rankings">Mis Rankings</button>
+    <button data-view="team">Mi equipo</button>
+  </nav>
+
+  <div class="filters">
+    <div class="filter-group" id="posFilters">
+      <span class="filter-label">Posición</span>
+    </div>
+    <div class="filter-group" id="tierFilters">
+      <span class="filter-label">Tier</span>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Orden</span>
+      <select class="select-sort" id="sortSelect">
+        <option value="adp">ADP</option>
+        <option value="custom">Mis rankings</option>
+        <option value="name">Nombre A-Z</option>
+      </select>
+    </div>
+    <div class="filter-group status-toggle">
+      <button class="pill active" id="hideDrafted" data-active="true">Ocultar draftados</button>
+    </div>
+  </div>
+
+  <div class="view-root view-board" id="viewRoot">
+    <div class="layout" id="mainLayout">
+      <div class="board-wrap">
+        <div class="board-head">
+          <h2>Jugadores disponibles</h2>
+          <span class="board-count" id="boardCount">— jugadores</span>
+        </div>
+        <div class="board" id="board"></div>
+      </div>
+
+      <div class="sidebar">
+        <div class="scoreboard">
+          <h3>Mi roster</h3>
+          <span class="tag" id="rosterTag">0 / 0 SLOTS</span>
+          <div id="slots"></div>
+        </div>
+        <div class="roster-panel">
+          <h3>Draftados (mío)</h3>
+          <div class="roster-list scroll" id="rosterList"></div>
+          <button class="reset-link" id="resetBtn">Reiniciar draft completo</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rankings-wrap" id="rankingsWrap">
+      <div class="rankings-head">
+        <h2>Mis rankings personales</h2>
+        <span class="rankings-hint">Arrastra para reordenar · edita el tier a tu gusto</span>
+      </div>
+      <div class="rankings-list" id="rankingsList"></div>
+      <button class="reset-link" id="resetRankingsBtn">Restablecer orden y tiers</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="pickModalOverlay">
+  <div class="modal">
+    <h4 id="pickModalTitle">Registrar draft</h4>
+    <p>Indica quién lo drafteó y, si lo sabes, en qué pick — así se calcula el valor vs. ADP.</p>
+    <div class="field">
+      <label for="ownerInput">Nombre</label>
+      <input type="text" id="ownerInput" placeholder="Ej. Tú o el nombre del rival">
+    </div>
+    <div class="field">
+      <label for="pickInput">Número de pick (opcional)</label>
+      <input type="number" id="pickInput" placeholder="Ej. 14" min="1">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="pickModalCancel">Cancelar</button>
+      <button class="btn-primary" id="pickModalConfirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="profileModalOverlay">
+  <div class="modal">
+    <h4>Tu nombre</h4>
+    <p>Se usa para saber cuáles jugadores son tuyos en el draft.</p>
+    <div class="field">
+      <input type="text" id="profileInput" placeholder="Ej. Daniel" maxlength="24">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" id="profileCancel">Cancelar</button>
+      <button class="btn-primary" id="profileConfirm">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="roomModalOverlay">
+  <div class="modal">
+    <h4>Multijugador en vivo</h4>
+    <div id="roomModalDisabled" style="display:none;">
+      <p>La sincronización en tiempo real no está configurada todavía. Revisa README.md para activar Firebase y compartir un mismo draft entre varios dispositivos.</p>
+      <div class="modal-actions"><button class="btn-secondary" id="roomModalCloseOnly" style="flex:none;width:100%;">Cerrar</button></div>
+    </div>
+    <div id="roomModalEnabled" style="display:none;">
+      <div id="roomModalNoRoom">
+        <p>Crea una sala para compartir este draft en vivo, o únete a una existente con su código.</p>
+        <div class="modal-actions" style="margin-bottom:14px;">
+          <button class="btn-primary" id="createRoomBtn">Crear sala nueva</button>
+        </div>
+        <div class="field">
+          <label for="joinRoomInput">Unirme con código</label>
+          <input type="text" id="joinRoomInput" placeholder="Ej. A1B2C3" maxlength="8" style="text-transform:uppercase;">
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="roomModalCancel">Cerrar</button>
+          <button class="btn-primary" id="joinRoomBtn">Unirme</button>
+        </div>
+      </div>
+      <div id="roomModalInRoom" style="display:none;">
+        <p>Sala activa: <strong id="currentRoomCode" style="color:var(--amber)"></strong><br>Comparte el enlace para que otros vean este draft en vivo.</p>
+        <div class="modal-actions" style="margin-bottom:10px;">
+          <button class="btn-primary" id="copyLinkBtn">Copiar enlace</button>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="leaveRoomBtn">Salir a modo local</button>
+          <button class="btn-secondary" id="roomModalCloseOnly2">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="save-indicator" id="saveIndicator"><div class="save-dot"></div><span id="saveLabel">Guardado</span></div>
+
+<script type="module" src="app.js"></script>
+</body>
+</html>

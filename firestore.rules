@@ -1,0 +1,15 @@
+rules_version = '2';
+
+// Reglas de ejemplo para el modo multijugador de Draft Night.
+// Cada sala vive en /rooms/{roomId} y solo guarda los picks del draft
+// (sin datos personales sensibles), así que se permite lectura/escritura
+// abierta a quien tenga el código de la sala. Si quieres más control,
+// añade autenticación anónima (signInAnonymously) y valida request.auth
+// aquí, o limita el tamaño/forma del documento con reglas de validación.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /rooms/{roomId} {
+      allow read, write: if true;
+    }
+  }
+}
